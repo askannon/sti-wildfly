@@ -10,7 +10,7 @@ EXPOSE 8080
 ENV WILDFLY_VERSION=8.1 \
 	WILDFLY_VERSION_BIN=8.1.0.Final \
 	MAVEN_VERSION=3.3.3 \
-	JAVA_HOME=/usr/lib/jvm/java-1.8.0
+	JAVA_HOME=/usr/lib/jvm/default-jvm
 
 LABEL io.k8s.description="Platform for building and running JEE applications on WildFly 8.1" \
       io.k8s.display-name="WildFly 8.1" \
