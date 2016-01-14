@@ -12,7 +12,8 @@ ENV STI_SCRIPTS_PATH="/usr/local/s2i" \
 	WILDFLY_VERSION_BIN=8.1.0.Final \
 	MAVEN_VERSION=3.3.3 \
 	PATH=$PATH:"/usr/local/s2i" \
-	JAVA_HOME=/usr/lib/jvm/default-jvm
+	JAVA_HOME=/usr/lib/jvm/default-jvm \
+  HOME="/wildfly"
 
 LABEL io.k8s.description="Platform for building and running JEE applications on WildFly 8.1" \
       io.k8s.display-name="WildFly 8.1" \
@@ -59,7 +60,7 @@ ADD ./contrib/wfcfg/standalone.xml /wildfly/standalone/configuration/standalone.
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 
 # Add a user to run our stuff
-RUN adduser -D -u 1001 -h ${HOME} -s /sbin/nologin -g "Default Application User" default
+RUN adduser -D -u 1001 -h ${HOME} -G root -s /sbin/nologin -g "Default Application User" default
 
 RUN chown -R 1001:0 /wildfly && \
     chmod -R ug+rw /wildfly && \

@@ -10,7 +10,7 @@ PID_FILE=/tmp/wildfly.pid
 function restore_saved_artifacts() {
   if [ "$(ls /opt/s2i/destination/artifacts/ 2>/dev/null)" ]; then
     echo -n "Restoring saved artifacts from prior build..."
-    mv /opt/s2i/destination/artifacts/* $HOME/.
+    mv /opt/s2i/destination/artifacts/* $LOCAL_SOURCE_DIR/.
   fi
 }
 
@@ -45,8 +45,8 @@ function get_output_dir() {
   echo ${dir}
 }
 
-# Source code provided to S2I is at ${HOME}
-LOCAL_SOURCE_DIR=${HOME}
+# Source code provided to S2I is at /tmp/src
+LOCAL_SOURCE_DIR=/tmp/src
 mkdir -p $LOCAL_SOURCE_DIR
 
 # Resulting WAR files will be deployed to /wildfly/standalone/deployments
