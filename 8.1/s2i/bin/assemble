@@ -25,13 +25,13 @@ function get_output_dir() {
        echo "ARTIFACT_DIR must be set for multi module Maven builds"
        exit 1
     fi
-    dir="${$LOCAL_SOURCE_DIR}/target"
+    dir="${LOCAL_SOURCE_DIR}/target"
   else
     if [ "${ARTIFACT_DIR:0:1}" = "/" ]; then
        echo "ARTIFACT_DIR \"${ARTIFACT_DIR}\" must not be absolute but relative to the source directory"
        exit 1
     fi
-    dir="${$LOCAL_SOURCE_DIR}/${ARTIFACT_DIR}"
+    dir="${LOCAL_SOURCE_DIR}/${ARTIFACT_DIR}"
   fi
 
   # Normalize dir
