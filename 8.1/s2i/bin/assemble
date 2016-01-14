@@ -49,6 +49,8 @@ function get_output_dir() {
 LOCAL_SOURCE_DIR=/tmp/src
 mkdir -p $LOCAL_SOURCE_DIR
 
+cd $LOCAL_SOURCE_DIR
+
 # Resulting WAR files will be deployed to /wildfly/standalone/deployments
 DEPLOY_DIR=/wildfly/standalone/deployments
 mkdir -p $DEPLOY_DIR
@@ -110,7 +112,7 @@ fi
 
 if [ -d $LOCAL_SOURCE_DIR/cfg ]; then
   echo "Copying config files from project..."
-  cp cfg/* /wildfly/standalone/configuration
+  cp $LOCAL_SOURCE_DIR/cfg/* /wildfly/standalone/configuration
   chgrp -R 0 /wildfly/standalone/configuration
   chmod -R g+rw /wildfly/standalone/configuration
 fi
@@ -118,7 +120,7 @@ fi
 if [ -d $LOCAL_SOURCE_DIR/modules ]; then
   echo "Copying modules from project..."
   mkdir /wildfly/provided_modules
-  cp -r modules/* /wildfly/provided_modules
+  cp -r $LOCAL_SOURCE_DIR/modules/* /wildfly/provided_modules
   chgrp -R 0 /wildfly/provided_modules
   chmod -R g+rw /wildfly/provided_modules
 fi
