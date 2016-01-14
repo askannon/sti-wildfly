@@ -14,6 +14,37 @@ function restore_saved_artifacts() {
   fi
 }
 
+# Configure the artifact output directory so we can also deal with multi module projects
+function get_output_dir() {
+  local dir=""
+
+  # If multi module build and no ARTIFACT_DIR is set --> error
+  if [ x"${ARTIFACT_DIR}" = x ]; then
+    echo " ${MAVEN_ARGS}" | grep -q ' -pl'
+    if [ $? -eq 0 ]; then
+       echo "ARTIFACT_DIR must be set for multi module Maven builds"
+       exit 1
+    fi
+    dir="${$LOCAL_SOURCE_DIR}/target"
+  else
+    if [ "${ARTIFACT_DIR:0:1}" = "/" ]; then
+       echo "ARTIFACT_DIR \"${ARTIFACT_DIR}\" must not be absolute but relative to the source directory"
+       exit 1
+    fi
+    dir="${$LOCAL_SOURCE_DIR}/${ARTIFACT_DIR}"
+  fi
+
+  # Normalize dir
+  dir=$(echo ${dir} | tr -s /)
+  dir=${dir%/}
+  # The parent must exist but target/ won't exist yet
+  if [ ! -d $(dirname "${dir}"}) ]; then
+    echo "Please specify an existing build directory ARTIFACT_DIR (tried '$(dirname "${dir}")' which does not exist)"
+    exit 1
+  fi
+  echo ${dir}
+}
+
 # Return the deployment-scanner configuration
 function getscanconfig() {
   count=0
@@ -174,7 +205,6 @@ if [ -f "$LOCAL_SOURCE_DIR/pom.xml" ]; then
   restore_saved_artifacts
 
   pushd $LOCAL_SOURCE_DIR &> /dev/null
-  JAVA_HOME=/etc/alternatives/java_sdk_1.7.0
 
   if [ -z "$MAVEN_ARGS" ]; then
     export MAVEN_ARGS="package -Popenshift -DskipTests"
@@ -199,13 +229,17 @@ else
   echo "Copying binaries in source directory into $DEPLOY_DIR for later deployment..."
 fi
 
-if [ -d $LOCAL_SOURCE_DIR/target ]; then
-  cp $LOCAL_SOURCE_DIR/target/*.war $DEPLOY_DIR >& /dev/null
+build_dir=$(get_output_dir)
+
+if [ -d ${build_dir} ]; then
+  cp ${build_dir}/*.war $DEPLOY_DIR >& /dev/null
   chgrp -R 0 $DEPLOY_DIR
   chmod -R g+rw $DEPLOY_DIR
 fi
+
 if [ -d $LOCAL_SOURCE_DIR/deployments ]; then
-  cp $LOCAL_SOURCE_DIR/deployments/*.war $DEPLOY_DIR >& /dev/null
+  echo "Copying additional deployment files from project..."
+  cp $LOCAL_SOURCE_DIR/deployments/* $DEPLOY_DIR >& /dev/null
   chgrp -R 0 $DEPLOY_DIR
   chmod -R g+rw $DEPLOY_DIR
 fi
@@ -225,35 +259,5 @@ if [ -d $LOCAL_SOURCE_DIR/modules ]; then
   chmod -R g+rw /wildfly/provided_modules
 fi
 echo "...done"
-
-# This logic is intended to deploy the app as part of assemble
-# but many apps fail to deploy because they require additional
-# resources to be present, eg databases, which are not available
-# at build time, so don't do this for now.
-
-# add admin user
-#/wildfly/bin/add-user.sh $ADMIN $PASSWORD --silent
-
-#echo "Starting wildfly for deployment"
-#/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
-#echo $! > ${PID_FILE}
-
-#rc=0
-#ishttpup || rc=$?
-#if [ $rc -eq 1 ]; then
-#  echo "Timed out waiting for http listening port for wildfly process"
-#  exit 1
-#elif [ $rc -eq 2 ]; then
-#  echo "wildfly process failed to start"
-#  exit 2
-#fi
-
-#waitondeployments
-#rc=$?
-#/wildfly/bin/jboss-cli.sh -u=$ADMIN -p=$PASSWORD -c ":shutdown"
-#rm /tmp/wildfly.pid
-
-# remove admin user
-#sed -i '/^#/! s/^/#/' /wildfly/{standalone,domain}/configuration/mgmt-{groups,users}.properties
 
 exit $rc
