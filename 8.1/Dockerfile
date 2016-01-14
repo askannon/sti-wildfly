@@ -1,7 +1,7 @@
 # This image provides a base for building and running WildFly applications.
 # It builds using maven and runs the resulting artifacts on WildFly 8.1.
 
-FROM openshift/base-centos7
+FROM alpine:3.3
 
 MAINTAINER Askannon <askannon@flexarc.com>
 
@@ -19,10 +19,28 @@ LABEL io.k8s.description="Platform for building and running JEE applications on 
       io.openshift.s2i.destination="/opt/s2i/destination"
 
 # Install Maven, Wildfly 8
-RUN yum install -y --enablerepo=centosplus \
-    tar unzip bc which lsof java-1.8.0-openjdk java-1.8.0-openjdk-devel && \
-    yum clean all -y && \
-    (curl -0 http://www.us.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | \
+RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+ && apk add --update \
+		bash \
+		curl \
+		openjdk8 \
+		ngrep \
+		tcpdump \
+		lsof \
+		tar \
+		bc \
+		unzip \
+		ca-certificates && \
+ rm /var/cache/apk/*
+
+# Update java keystore since alpine doesn't ship with them and thus SSL connections cause issues
+RUN find /usr/share/ca-certificates/mozilla/ -name "*.crt" -exec keytool -import -trustcacerts \
+	-keystore ${JAVA_HOME}/jre/lib/security/cacerts -storepass changeit -noprompt \
+	-file {} -alias {} \; && \
+	keytool -list -keystore ${JAVA_HOME}/jre/lib/security/cacerts --storepass changeit
+
+# Install Maven
+RUN (curl -0 http://www.us.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | \
     tar -zx -C /usr/local) && \
     ln -sf /usr/local/apache-maven-$MAVEN_VERSION/bin/mvn /usr/local/bin/mvn && \
     mkdir -p /wildfly && \
@@ -36,6 +54,9 @@ ADD ./contrib/wfcfg/standalone.xml /wildfly/standalone/configuration/standalone.
 
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
+
+# Add a user to run our stuff
+RUN adduser -D -u 1001 -h ${HOME} -s /sbin/nologin -g "Default Application User" default
 
 RUN chown -R 1001:0 /wildfly && \
     chmod -R ug+rw /wildfly && \
