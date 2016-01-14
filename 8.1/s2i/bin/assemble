@@ -45,6 +45,13 @@ function get_output_dir() {
   echo ${dir}
 }
 
+function setup_maven() {
+  if [ -f "${LOCAL_SOURCE_DIR}/configuration/settings.xml" ]; then
+    maven_env_args="${maven_env_args} -s ${LOCAL_SOURCE_DIR}/configuration/settings.xml"
+    echo "Using custom maven settings from ${LOCAL_SOURCE_DIR}/configuration/settings.xml"
+  fi
+}
+
 # Return the deployment-scanner configuration
 function getscanconfig() {
   count=0
@@ -208,6 +215,9 @@ if [ -f "$LOCAL_SOURCE_DIR/pom.xml" ]; then
 
   if [ -z "$MAVEN_ARGS" ]; then
     export MAVEN_ARGS="package -Popenshift -DskipTests"
+  fi
+  if [ -f "$LOCAL_SOURCE_DIR/configuration/settings.xml" ]; then
+	export MAVEN_ARGS="$MAVEN_ARGS -s $LOCAL_SOURCE_DIR/configuration/settings.xml"
   fi
   if [ -z "$MAVEN_ARGS_APPEND" ]; then
     export MAVEN_ARGS="$MAVEN_ARGS $MAVEN_ARGS_APPEND"
