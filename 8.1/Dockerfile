@@ -7,16 +7,19 @@ MAINTAINER Askannon <askannon@flexarc.com>
 
 EXPOSE 8080
 
-ENV WILDFLY_VERSION=8.1 \
+ENV STI_SCRIPTS_PATH="/usr/local/s2i" \
+	WILDFLY_VERSION=8.1 \
 	WILDFLY_VERSION_BIN=8.1.0.Final \
 	MAVEN_VERSION=3.3.3 \
+	PATH=$PATH:"/usr/local/s2i" \
 	JAVA_HOME=/usr/lib/jvm/default-jvm
 
 LABEL io.k8s.description="Platform for building and running JEE applications on WildFly 8.1" \
       io.k8s.display-name="WildFly 8.1" \
       io.openshift.expose-services="8080:http" \
       io.openshift.tags="builder,wildfly,wildfly81" \
-      io.openshift.s2i.destination="/opt/s2i/destination"
+      io.openshift.s2i.destination="/opt/s2i/destination" \
+			io.openshift.s2i.scripts-url="image:///usr/local/s2i"
 
 # Install Maven, Wildfly 8
 RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
