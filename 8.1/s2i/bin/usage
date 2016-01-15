@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+set -e
 
 cat <<EOF
 This is an S2I WildFly v8.1 centos base image responsible for consuming a JEE project

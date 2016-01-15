@@ -53,8 +53,8 @@ RUN (curl -0 http://www.us.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries
 
 # Add sti wildfly customizations
 ADD ./contrib/wfmodules/ /wildfly/modules/
-ADD ./contrib/wfbin/standalone.conf /wildfly/bin/standalone.conf
-ADD ./contrib/wfcfg/standalone.xml /wildfly/standalone/configuration/standalone.xml
+ADD ./contrib/wfbin/ /wildfly/bin/
+ADD ./contrib/wfcfg/ /wildfly/standalone/configuration/
 
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
