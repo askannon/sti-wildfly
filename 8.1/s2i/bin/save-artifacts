@@ -2,14 +2,11 @@
 
 set -e
 
-pushd ${HOME} >/dev/null
+S2I_ARTIFACTS_DIR=/tmp/src
 
-# ${HOME}/.m2 is the maven repo dir
-# {$HOME}/source/target is the class files from the previous build
-if [ -d ./source/target ]; then
-    tar cf - ./.m2 ./source/target
-else
-    tar cf - ./.m2
+# Tar up maven repository for reuse in an incremental build
+if [ -d "${S2I_ARTIFACTS_DIR}/m2" ]; then
+   cd ${S2I_ARTIFACTS_DIR}
+   tar cf - m2
+   cd -
 fi
-
-popd >/dev/null

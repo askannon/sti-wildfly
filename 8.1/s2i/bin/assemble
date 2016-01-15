@@ -72,7 +72,7 @@ if [ -f "$LOCAL_SOURCE_DIR/pom.xml" ]; then
   pushd $LOCAL_SOURCE_DIR &> /dev/null
 
   if [ -z "$MAVEN_ARGS" ]; then
-    export MAVEN_ARGS="package -Popenshift -DskipTests"
+    export MAVEN_ARGS="package -Popenshift -DskipTests -Dmaven.repo.local=$LOCAL_SOURCE_DIR/m2"
   fi
   if [ -f "$LOCAL_SOURCE_DIR/configuration/settings.xml" ]; then
 	export MAVEN_ARGS="$MAVEN_ARGS -s $LOCAL_SOURCE_DIR/configuration/settings.xml"
